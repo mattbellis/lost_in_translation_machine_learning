@@ -3,7 +3,7 @@ import matplotlib.pylab as plt
 
 
 ################################################################################
-def sumfunc(dataset,dtype='normal', plot_range=(0,2)):               ## dataset = data_1(nentries,nfeatures)
+def sumfunc(dataset, dtype='normal', plot_range=(0,2)):               ## dataset = data_1(nentries,nfeatures)
   mysum = []
 
   nentries,nfeatures = dataset.shape
@@ -24,7 +24,7 @@ def sumfunc(dataset,dtype='normal', plot_range=(0,2)):               ## dataset 
 ################################################################################
 def histfunc(dataset):   ## dataset = data_1(nentries,nfeatures)
   nentries,nfeatures = dataset.shape
-  plt.figure(figsize=(16,5))
+  plt.figure(figsize=(16,3))
   for i in range(nfeatures):
     plt.subplot(1,nfeatures,i+1)
     plt.hist(dataset.T[i],bins=50,range=(0,1))
@@ -69,5 +69,21 @@ def gen_original_data(nentries,nfeatures, dtype='normal'):
 
   data = np.array(data_temp)
   return data
+################################################################################
+
+################################################################################
+# Should be all or mostly here
+# https://colab.research.google.com/drive/1uNKwJaxleCwpp2pOeErTY8ZfPp9aj08E?usp=sharing
+################################################################################
+# def shuffle_dataset
+################################################################################
+# def plot_correlations
+################################################################################
+# def do_training
+################################################################################
+# def plot_diagnostics
+# ROC
+################################################################################
+# def plot_neural_net_weights_and_biases
 ################################################################################
 
