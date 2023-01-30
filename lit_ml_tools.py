@@ -1,5 +1,11 @@
 import numpy as np
 import matplotlib.pylab as plt
+import random
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import roc_curve, auc
 
 
 ################################################################################
@@ -69,15 +75,221 @@ def gen_original_data(nentries,nfeatures, dtype='normal'):
 
   data = np.array(data_temp)
   return data
+
+
+
+
+
 ################################################################################
-# gabby was here
+#
 ################################################################################
 # Should be all or mostly here
 # https://colab.research.google.com/drive/1uNKwJaxleCwpp2pOeErTY8ZfPp9aj08E?usp=sharing
 ################################################################################
-# def shuffle_dataset
+
+
+
+
+####
+#NOTES FOR GABBY (connecting this to og code)
+#- mydataset = data2
+#- shuffled data = data3 **this is what needs to be in beginning of shuffle_dataset function
+
 ################################################################################
-# def plot_correlations
+# def shuffle_dataset  (formerly 'datafunc')
+# CHANGES from original code:
+# - removed dataset2 as arg and defined in function
+
+def shuffle_dataset(dataset1):
+  nentries, nfeatures = dataset1.shape
+
+  # Shuffle dataset 1 to make dataset 2
+  dataset2 = np.array(dataset1)
+  for i in range(nfeatures):
+    np.random.shuffle(dataset2.T[i])
+  return dataset2
+
+def concat_dataset(dataset1, dataset2, wantplots=False):
+  # Put data and labels together
+  X = np.concatenate([dataset1, dataset2])
+
+  y1 = np.zeros(len(dataset1)) # 0 for dataset 1
+  y2 = np.ones(len(dataset2))  # 1 for dataset 2
+  y = np.concatenate([y1,y2])
+
+  if wantplots==True:
+    ## Histograms
+    nfeatures = len(dataset1.transpose())
+    print(f"nfeatures: {nfeatures}")
+
+    # Dataset 1
+    plt.figure(figsize=(14,4))
+    for i in range(nfeatures):
+      feature = dataset1.transpose()[i]
+      plt.subplot(1,5,i+1)
+      plt.hist(feature,bins=25,range=(0,1))
+      plt.title('Dataset 1')
+
+    # Dataset 2
+    plt.figure(figsize=(14,4))
+    for i in range(nfeatures):
+      feature = dataset2.transpose()[i]
+      plt.subplot(1,5,i+1)
+      plt.hist(feature,bins=25,range=(0,1))
+      plt.title('Dataset 2')
+  # X: dataset 1 and 2 values concatenated
+  # y: dataset 1 and 2 labels concatenated
+  return X,y
+
+
+################################################################################
+# def plot_correlations (formerly 'correlations')
+  # CHANGES from original code:
+  # - removed X,y as args and defined in function
+  # - add dataset1, dataset2
+def correlations(dataset1, dataset2, label=0, wantplots=False, ax1=None, **kwds):
+  """Calculate pairwise correlation between features.
+
+  Extra arguments are passed on to DataFrame.corr()
+  """
+  X,y= concat_dataset(dataset1, dataset2, wantplots=False)
+
+  num_features = len(X[0])
+
+  num_features_str = [str(x + 1) for x in range(num_features)]
+  print('num_features_str:', num_features_str)
+
+  # Correlations wants the data as a dataframe
+  # Use "label" to figure out which dataset we plot, once they
+  # were merged
+  data = pd.DataFrame(X[y == label], columns=num_features_str)
+
+  # simply call df.corr() to get a table of
+  # correlation values if you do not need
+  # the fancy plotting
+  corrmat = data.corr(**kwds)
+
+  if wantplots == True:
+
+    if ax1 is None:
+      fig, ax1 = plt.subplots(ncols=1, figsize=(6, 5))
+
+    opts = {'cmap': plt.get_cmap("RdBu"),
+            'vmin': -1, 'vmax': +1}
+    heatmap1 = ax1.pcolor(corrmat, **opts)
+    plt.colorbar(heatmap1, ax=ax1)
+
+    ax1.set_title("Correlations")
+
+    labels = corrmat.columns.values
+    for ax in (ax1,):
+      # shift location of ticks to center of the bins
+      ax.set_xticks(np.arange(len(labels)) + 0.5, minor=False)
+      ax.set_yticks(np.arange(len(labels)) + 0.5, minor=False)
+      ax.set_xticklabels(labels, minor=False, ha='right', rotation=70)
+      ax.set_yticklabels(labels, minor=False)
+
+    plt.tight_layout()
+
+    # How to Call:
+    # correlations(label=0, wantplots=True, ax1=plt.gca())
+    # label=0: dataset 1 , label=1: dataset 2
+
+################################################################################
+# def neuralnet
+  # CHANGES from original code:
+  # - removed X,y as args and defined in function
+  # - removed num_features as args and defined in function
+def neuralnet(dataset1, dataset2, num_hidden_layers, wantplots=False):
+  # Let's make use of the datasets we created earlier
+
+  X, y = concat_dataset(dataset1, dataset2, wantplots=False)
+  num_features= len(X[0])
+
+  X_dev, X_eval, y_dev, y_eval = train_test_split(X, y, test_size=0.5)
+  X_train, X_test, y_train, y_test = train_test_split(X_dev, y_dev, test_size=0.5)
+
+  # This is the neural net (MLPClassifier)
+  # num_hidden_layers default = 2
+  clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(num_features, num_hidden_layers), random_state=1,
+                      max_iter=10000)
+
+
+  clf.fit(X_train, y_train)
+
+  ##############################################################################
+  def compare_train_test(clf, X_train, y_train, X_test, y_test, bins=30):
+    decisions = []
+    for X, y in ((X_train, y_train), (X_test, y_test)):
+      d1 = clf.predict_proba(X[y > 0.5])[:, 1]
+      d2 = clf.predict_proba(X[y < 0.5])[:, 1]
+      decisions += [d1, d2]
+
+    low = min(np.min(d) for d in decisions)
+    high = max(np.max(d) for d in decisions)
+    low_high = (low, high)
+
+    if wantplots == True:
+      plt.figure(figsize=(12, 6))
+      plt.hist(decisions[0],
+               color='r', alpha=0.5, range=low_high, bins=bins,
+               histtype='stepfilled',
+               label='S (train)')
+      plt.hist(decisions[1],
+               color='b', alpha=0.5, range=low_high, bins=bins,
+               histtype='stepfilled',
+               label='B (train)')
+
+      hist, bins = np.histogram(decisions[2],
+                                bins=bins, range=low_high)
+      scale = len(decisions[2]) / sum(hist)
+      err = np.sqrt(hist * scale) / scale
+
+      width = (bins[1] - bins[0])
+      center = (bins[:-1] + bins[1:]) / 2
+
+      plt.errorbar(center, hist, yerr=err, fmt='o', c='r', label='S (test)')
+
+      hist, bins = np.histogram(decisions[3],
+                                bins=bins, range=low_high)
+      scale = len(decisions[2]) / sum(hist)
+      err = np.sqrt(hist * scale) / scale
+
+      plt.errorbar(center, hist, yerr=err, fmt='o', c='b', label='B (test)')
+
+      plt.xlabel("Classifer output")
+      plt.ylabel("Arbitrary units")
+      plt.legend(loc='best')
+
+  compare_train_test(clf, X_train, y_train, X_test, y_test, bins=100)
+
+  ##############################################################################
+
+  decisions = clf.predict_proba(X_test)[:, 1]
+  # Compute ROC curve and area under the curve
+  fpr, tpr, thresholds = roc_curve(y_test, decisions)
+  roc_auc = auc(fpr, tpr)
+
+  if wantplots == True:
+    plt.figure()
+    plt.plot(fpr, tpr, lw=1, label='ROC (area = %0.2f)' % (roc_auc))
+
+    plt.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6), label='Luck')
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver operating characteristic')
+    plt.legend(loc="lower right")
+    plt.grid()
+    plt.show()
+
+  return clf.coefs_, clf.intercepts_
+
+  # How to Call:
+  # weights,biases = neuralnet(num_hidden_layers= 2, wantplots=True)
+
+
 ################################################################################
 # def do_training
 ################################################################################
