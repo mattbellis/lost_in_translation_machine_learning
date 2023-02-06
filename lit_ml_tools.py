@@ -291,12 +291,88 @@ def neuralnet(dataset1, dataset2, num_hidden_layers, wantplots=False):
 
 
 ################################################################################
-# def do_training
+# def plot_neural_net_weights_and_biases
+## CHANGES from original code:
+def draw_network(biases,weights):
+  plt.figure(figsize=(12, 8))
+
+  markersize = 20  # Markersize
+  linewidth = 3
+
+  wnew = weights[1:3]
+
+  # Find the greatest number of nodes
+  nlayers = []
+  for i in biases:
+    nlayers.append(len(i))
+
+  max_nodes = max(nlayers)
+  print('max_nodes', max_nodes)
+
+  max_lo = 1
+  max_hi = max_lo + max_nodes
+  max_mid = max_lo + (max_nodes / 2)
+
+  x_coords = []
+  y_coords = []
+
+##
+
+
+  # Plot the nodes
+  for i, bb in enumerate(biases):
+    n = len(bb)  # Number of nodes
+    lo = max_mid - (n / 2)
+
+    xval = []
+    yval = []
+    for j, y in enumerate(bb):
+      color = plt.cm.rainbow(y)
+      plt.plot([i], [j + lo], 'o', color=color, markersize=markersize)
+      xval.append(i)
+      yval.append(j + lo)
+    x_coords.append(xval)
+    y_coords.append(yval)
+
+  # Plot the weights
+  nweights = len(wnew)
+  for i in range(0, nweights):
+    w1 = wnew[i]
+    for j in range(0, len(w1)):
+      w2 = w1[j]
+      for k in range(0, len(w2)):
+        x1 = x_coords[i][j]
+        y1 = y_coords[i][j]
+        x2 = x_coords[i + 1][k]
+        y2 = y_coords[i + 1][k]
+
+        weight = w2[k]
+        # print(weight)
+
+        color = plt.cm.rainbow(weight)
+        # print(x1,x2,y1,y2)
+        plt.plot([x1, x2], [y1, y2], '-', color=color, linewidth=linewidth)
+
+  # Plot the nodes again to cover up the lines
+  for i, b in enumerate(biases):
+    n = len(b)  # Number of nodes
+    lo = max_mid - (n / 2)
+
+    xval = []
+    yval = []
+    for j, y in enumerate(b):
+      color = plt.cm.rainbow(y)
+      plt.plot([i], [j + lo], 'o', color=color, markersize=markersize)
+      xval.append(i)
+      yval.append(j + lo)
+    x_coords.append(xval)
+    y_coords.append(yval)
+
 ################################################################################
 # def plot_diagnostics
 # ROC
 ################################################################################
-# def plot_neural_net_weights_and_biases
+
 ################################################################################
 
 
