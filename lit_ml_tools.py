@@ -192,7 +192,7 @@ def correlations(dataset1, dataset2, label=0, wantplots=False, ax1=None, **kwds)
     plt.tight_layout()
 
     # How to Call:
-    # correlations(label=0, wantplots=True, ax1=plt.gca())
+    # correlations(dataset1, dataset2, label=0, wantplots=True, ax1=plt.gca())
     # label=0: dataset 1 , label=1: dataset 2
 
 ################################################################################
@@ -299,3 +299,8 @@ def neuralnet(dataset1, dataset2, num_hidden_layers, wantplots=False):
 # def plot_neural_net_weights_and_biases
 ################################################################################
 
+
+
+## Troubleshooting
+#  when after pull if error "the files do not belong to the project"
+#  File- repair IDE- rescan project indexes- reopen project
