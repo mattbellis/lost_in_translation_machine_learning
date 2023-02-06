@@ -299,7 +299,7 @@ def draw_network(biases,weights):
   markersize = 20  # Markersize
   linewidth = 3
 
-  wnew = weights[1:3]
+  wnew = weights[1:len(weights)]
 
   # Find the greatest number of nodes
   nlayers = []
@@ -367,6 +367,7 @@ def draw_network(biases,weights):
       yval.append(j + lo)
     x_coords.append(xval)
     y_coords.append(yval)
+
 
 ################################################################################
 # def plot_diagnostics
