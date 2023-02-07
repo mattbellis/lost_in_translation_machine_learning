@@ -293,8 +293,10 @@ def neuralnet(dataset1, dataset2, num_hidden_layers, wantplots=False):
 ################################################################################
 # def plot_neural_net_weights_and_biases
 ## CHANGES from original code:
-def draw_network(biases,weights):
-  plt.figure(figsize=(12, 8))
+def draw_network(biases,weights, figsize=(12,8), ax=None):
+
+  if ax is None:
+      plt.figure(figsize=figsize)
 
   markersize = 20  # Markersize
   linewidth = 3
