@@ -18,6 +18,11 @@ def sumfunc(dataset, dtype='normal', plot_range=(0,2)):               ## dataset
     for i in range(nentries):
       s = sum(dataset[i]**2)
       mysum.append(s)
+  elif dtype=='relativity':
+    for i in range(nentries):
+      # Don't worry about taking the square root
+      s = dataset[i][0]**2 - (dataset[i][1]**2  + dataset[i][2]**2 + dataset[i][3]**2)
+      mysum.append(s)
   else:
     for i in range(nentries):
       s = sum(dataset[i])
@@ -28,12 +33,12 @@ def sumfunc(dataset, dtype='normal', plot_range=(0,2)):               ## dataset
   #print(mysum)
 
 ################################################################################
-def histfunc(dataset):   ## dataset = data_1(nentries,nfeatures)
+def histfunc(dataset,plot_range=(0,1)):   ## dataset = data_1(nentries,nfeatures)
   nentries,nfeatures = dataset.shape
   plt.figure(figsize=(16,3))
   for i in range(nfeatures):
     plt.subplot(1,nfeatures,i+1)
-    plt.hist(dataset.T[i],bins=50,range=(0,1))
+    plt.hist(dataset.T[i],bins=50,range=plot_range)
 
 ################################################################################
 #random
@@ -43,7 +48,7 @@ def data_ran(nentries,nfeatures):
 
 ##
 ################################################################################
-#############################################################################################
+############################################################################################
 def gen_original_data(nentries,nfeatures, dtype='normal'):
 
   data = np.random.random((nentries,nfeatures))
@@ -63,6 +68,21 @@ def gen_original_data(nentries,nfeatures, dtype='normal'):
 
   elif dtype=='flat':
       data_temp = np.random.random((nentries,nfeatures)).tolist()
+
+  # Sum of the squares = 1
+  elif dtype=='relativity':
+    data_temp = []
+    for i in range(nentries):
+      # First square the entries
+      sq = data[i]**2
+      # Get the sum
+      norm_p = sq[1] + sq[2] + sq[3]
+      sq[0] = norm_p + 1
+      # Normalize the entries
+      # Don't worry about taking the square root
+      dtmp = np.sqrt(sq)
+      #print(data[i], sq, norm, dtmp)
+      data_temp.append(dtmp)
 
   # The "normal" way, Sum of the = 1
   else:
@@ -174,8 +194,8 @@ def correlations(dataset1, dataset2, label=0, wantplots=False, ax1=None, **kwds)
     if ax1 is None:
       fig, ax1 = plt.subplots(ncols=1, figsize=(6, 5))
 
-    opts = {'cmap': plt.get_cmap("RdBu"),
-            'vmin': -1, 'vmax': +1}
+    #opts = {'cmap': plt.get_cmap("RdBu"), 'vmin': -1, 'vmax': +1}
+    opts = {'cmap': plt.get_cmap("viridis"), 'vmin': -1, 'vmax': +1}
     heatmap1 = ax1.pcolor(corrmat, **opts)
     plt.colorbar(heatmap1, ax=ax1)
 
@@ -192,7 +212,7 @@ def correlations(dataset1, dataset2, label=0, wantplots=False, ax1=None, **kwds)
     plt.tight_layout()
 
     # How to Call:
-    # correlations(label=0, wantplots=True, ax1=plt.gca())
+    # correlations(dataset1, dataset2, label=0, wantplots=True, ax1=plt.gca())
     # label=0: dataset 1 , label=1: dataset 2
 
 ################################################################################
@@ -211,8 +231,8 @@ def neuralnet(dataset1, dataset2, num_hidden_layers, wantplots=False):
 
   # This is the neural net (MLPClassifier)
   # num_hidden_layers default = 2
-  clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(num_features, num_hidden_layers), random_state=1,
-                      max_iter=10000)
+  #clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(num_features, num_hidden_layers), random_state=1, max_iter=10000)
+  clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=num_hidden_layers, random_state=1, max_iter=10000)
 
 
   clf.fit(X_train, y_train)
@@ -291,11 +311,98 @@ def neuralnet(dataset1, dataset2, num_hidden_layers, wantplots=False):
 
 
 ################################################################################
-# def do_training
+# def plot_neural_net_weights_and_biases
+## CHANGES from original code:
+def draw_network(biases,weights, figsize=(12,8), ax=None):
+
+  if ax is None:
+      plt.figure(figsize=figsize)
+
+  markersize = 20  # Markersize
+  linewidth = 3
+
+  wnew = weights[1:len(weights)]
+
+  # Find the greatest number of nodes
+  nlayers = []
+  for i in biases:
+    nlayers.append(len(i))
+
+  max_nodes = max(nlayers)
+  print('max_nodes', max_nodes)
+
+  max_lo = 1
+  max_hi = max_lo + max_nodes
+  max_mid = max_lo + (max_nodes / 2)
+
+  x_coords = []
+  y_coords = []
+
+##
+
+
+  # Plot the nodes
+  for i, bb in enumerate(biases):
+    n = len(bb)  # Number of nodes
+    lo = max_mid - (n / 2)
+
+    xval = []
+    yval = []
+    for j, y in enumerate(bb):
+        #color = plt.cm.rainbow(y)
+      color = plt.cm.viridis(y)
+      plt.plot([i], [j + lo], 'o', color=color, markersize=markersize)
+      xval.append(i)
+      yval.append(j + lo)
+    x_coords.append(xval)
+    y_coords.append(yval)
+
+  # Plot the weights
+  nweights = len(wnew)
+  for i in range(0, nweights):
+    w1 = wnew[i]
+    for j in range(0, len(w1)):
+      w2 = w1[j]
+      for k in range(0, len(w2)):
+        x1 = x_coords[i][j]
+        y1 = y_coords[i][j]
+        x2 = x_coords[i + 1][k]
+        y2 = y_coords[i + 1][k]
+
+        weight = w2[k]
+        # print(weight)
+
+        #color = plt.cm.rainbow(weight)
+        color = plt.cm.viridis(weight)
+        # print(x1,x2,y1,y2)
+        plt.plot([x1, x2], [y1, y2], '-', color=color, linewidth=linewidth)
+
+  # Plot the nodes again to cover up the lines
+  for i, b in enumerate(biases):
+    n = len(b)  # Number of nodes
+    lo = max_mid - (n / 2)
+
+    xval = []
+    yval = []
+    for j, y in enumerate(b):
+        #color = plt.cm.rainbow(y)
+      color = plt.cm.viridis(y)
+      plt.plot([i], [j + lo], 'o', color=color, markersize=markersize)
+      xval.append(i)
+      yval.append(j + lo)
+    x_coords.append(xval)
+    y_coords.append(yval)
+
+
 ################################################################################
 # def plot_diagnostics
 # ROC
 ################################################################################
-# def plot_neural_net_weights_and_biases
+
 ################################################################################
 
+
+
+## Troubleshooting
+#  when after pull if error "the files do not belong to the project"
+#  File- repair IDE- rescan project indexes- reopen project
