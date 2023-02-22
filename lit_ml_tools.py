@@ -349,7 +349,9 @@ def draw_network(biases,weights, figsize=(12,8), ax=None):
     xval = []
     yval = []
     for j, y in enumerate(bb):
-        #color = plt.cm.rainbow(y)
+      #color = plt.cm.rainbow(y)
+      # Normalize the values to be between 0 and 1, even though they go from -1 to 1
+      y = (y+1)/2
       color = plt.cm.viridis(y)
       plt.plot([i], [j + lo], 'o', color=color, markersize=markersize)
       xval.append(i)
@@ -372,6 +374,8 @@ def draw_network(biases,weights, figsize=(12,8), ax=None):
         weight = w2[k]
         # print(weight)
 
+        # Normalize the values to be between 0 and 1, even though they go from -1 to 1
+        weight = (weight+1)/2
         #color = plt.cm.rainbow(weight)
         color = plt.cm.viridis(weight)
         # print(x1,x2,y1,y2)
@@ -386,6 +390,8 @@ def draw_network(biases,weights, figsize=(12,8), ax=None):
     yval = []
     for j, y in enumerate(b):
         #color = plt.cm.rainbow(y)
+      # Normalize the values to be between 0 and 1, even though they go from -1 to 1
+      y = (y+1)/2
       color = plt.cm.viridis(y)
       plt.plot([i], [j + lo], 'o', color=color, markersize=markersize)
       xval.append(i)
