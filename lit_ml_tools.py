@@ -167,7 +167,7 @@ def concat_dataset(dataset1, dataset2, wantplots=False):
   # CHANGES from original code:
   # - removed X,y as args and defined in function
   # - add dataset1, dataset2
-def correlations(dataset1, dataset2, label=0, wantplots=False, ax1=None, **kwds):
+def correlations(dataset1, dataset2, label=0, colormap=plt.cm.viridis, wantplots=False, ax1=None, **kwds):
   """Calculate pairwise correlation between features.
 
   Extra arguments are passed on to DataFrame.corr()
@@ -195,7 +195,7 @@ def correlations(dataset1, dataset2, label=0, wantplots=False, ax1=None, **kwds)
       fig, ax1 = plt.subplots(ncols=1, figsize=(6, 5))
 
     #opts = {'cmap': plt.get_cmap("RdBu"), 'vmin': -1, 'vmax': +1}
-    opts = {'cmap': plt.get_cmap("viridis"), 'vmin': -1, 'vmax': +1}
+    opts = {'cmap': colormap, 'vmin': -1, 'vmax': +1}
     heatmap1 = ax1.pcolor(corrmat, **opts)
     plt.colorbar(heatmap1, ax=ax1)
 
@@ -212,7 +212,7 @@ def correlations(dataset1, dataset2, label=0, wantplots=False, ax1=None, **kwds)
     plt.tight_layout()
 
     # How to Call:
-    # correlations(dataset1, dataset2, label=0, wantplots=True, ax1=plt.gca())
+    # correlations(dataset1, dataset2, label=0, colormap= plt.cm.viridis, wantplots=True, ax1=plt.gca())
     # label=0: dataset 1 , label=1: dataset 2
 
 ################################################################################
@@ -313,7 +313,7 @@ def neuralnet(dataset1, dataset2, num_hidden_layers, wantplots=False):
 ################################################################################
 # def plot_neural_net_weights_and_biases
 ## CHANGES from original code:
-def draw_network(biases,weights, figsize=(12,8), ax=None):
+def draw_network(biases,weights, figsize=(12,8), colormap= plt.cm.viridis ,ax=None):
 
   if ax is None:
       plt.figure(figsize=figsize)
@@ -352,7 +352,8 @@ def draw_network(biases,weights, figsize=(12,8), ax=None):
       #color = plt.cm.rainbow(y)
       # Normalize the values to be between 0 and 1, even though they go from -1 to 1
       y = (y+1)/2
-      color = plt.cm.viridis(y)
+      #color = plt.cm.viridis(y)
+      color = colormap(y)
       plt.plot([i], [j + lo], 'o', color=color, markersize=markersize)
       xval.append(i)
       yval.append(j + lo)
@@ -376,8 +377,8 @@ def draw_network(biases,weights, figsize=(12,8), ax=None):
 
         # Normalize the values to be between 0 and 1, even though they go from -1 to 1
         weight = (weight+1)/2
-        #color = plt.cm.rainbow(weight)
-        color = plt.cm.viridis(weight)
+        color = colormap(weight)
+        #color = plt.cm.viridis(weight)
         # print(x1,x2,y1,y2)
         plt.plot([x1, x2], [y1, y2], '-', color=color, linewidth=linewidth)
 
@@ -392,7 +393,8 @@ def draw_network(biases,weights, figsize=(12,8), ax=None):
         #color = plt.cm.rainbow(y)
       # Normalize the values to be between 0 and 1, even though they go from -1 to 1
       y = (y+1)/2
-      color = plt.cm.viridis(y)
+      #color = plt.cm.viridis(y)
+      color = colormap(y)
       plt.plot([i], [j + lo], 'o', color=color, markersize=markersize)
       xval.append(i)
       yval.append(j + lo)
