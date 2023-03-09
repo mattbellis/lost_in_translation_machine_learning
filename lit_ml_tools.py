@@ -304,7 +304,7 @@ def neuralnet(dataset1, dataset2, num_hidden_layers, wantplots=False):
     plt.grid()
     plt.show()
 
-  return clf.coefs_, clf.intercepts_
+  return clf.coefs_, clf.intercepts_,roc_auc
 
   # How to Call:
   # weights,biases = neuralnet(num_hidden_layers= 2, wantplots=True)
@@ -329,7 +329,7 @@ def draw_network(biases,weights, figsize=(12,8), colormap= plt.cm.viridis ,ax=No
     nlayers.append(len(i))
 
   max_nodes = max(nlayers)
-  print('max_nodes', max_nodes)
+  #print('max_nodes', max_nodes)
 
   max_lo = 1
   max_hi = max_lo + max_nodes
