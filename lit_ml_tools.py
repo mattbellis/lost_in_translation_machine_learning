@@ -404,8 +404,165 @@ def draw_network(biases,weights, figsize=(12,8), colormap= plt.cm.viridis ,ax=No
 
 
 ################################################################################
-# def plot_diagnostics
-# ROC
+# ROC DATA SORTING
+def ROC_data(roc):
+  roc_scores = []
+  roc_values = []
+
+  if roc >= 0.9:
+    roc_scores.append('excellent')
+    roc_values.append(roc)
+  elif 0.8 <= roc < 0.9:
+    roc_scores.append('good')
+    roc_values.append(roc)
+  elif 0.7 <= roc < 0.8:
+    roc_scores.append('fair')
+    roc_values.append(roc)
+  elif 0.6 <= roc < 0.7:
+    roc_scores.append('poor')
+    roc_values.append(roc)
+  elif roc < 0.6:
+    roc_scores.append('failed')
+    roc_values.append(roc)
+
+  return roc_scores, roc_values
+# BEST NODE PATTERN using ROC analysis
+def best_node_pattern(dataset1, dataset2, nentries, nfeatures, nnode, ntrials, nHL,
+                        wantplots=False):  # nHL= 1, 2 (number of HLs)
+    ### HOW MANY HIDDEN LAYERS
+  if nHL == 1:
+    roc_scores = []
+    roc_values = []
+    HL_nodes = []
+
+    for j in range(ntrials):
+
+      if wantplots == True:
+        fig = plt.figure(figsize=(ntrials * nnode, nnode + nnode))
+
+      roc_scores_pertrial = []
+      roc_values_pertrial = []
+      HL_nodes_pertrial = []
+
+      roc_scores.append(roc_scores_pertrial)
+      roc_values.append(roc_values_pertrial)
+      HL_nodes.append(HL_nodes_pertrial)
+
+      for hl1 in range(nnode):
+        if wantplots == True:
+          plt.subplot(ntrials, nnode, hl1 + 1)
+
+        w, b, roc = neuralnet(dataset1, dataset2, num_hidden_layers=(nfeatures, hl1 + 1), wantplots=False)
+        if wantplots == True:
+          draw_network(b, w, ax=plt.gca(), colormap=plt.cm.Greens)
+
+        roc_scores_pertrial.append(ROC_data(roc)[0])
+        roc_values_pertrial.append(ROC_data(roc)[1])
+        HL_nodes_pertrial.append([hl1 + 1])
+  elif nHL == 2:
+    roc_scores = []
+    roc_values = []
+    HL_nodes = []
+
+    for j in range(ntrials):
+
+      if wantplots == True:
+        plt.figure(figsize=(12, 12))
+
+      roc_scores_pertrial = []
+      roc_values_pertrial = []
+      HL_nodes_pertrial = []
+
+      roc_scores.append(roc_scores_pertrial)
+      roc_values.append(roc_values_pertrial)
+      HL_nodes.append(HL_nodes_pertrial)
+
+      for hl1 in range(nnode):
+        for hl2 in range(nnode):
+
+          if wantplots == True:
+            plt.subplot(nnode, nnode, nnode * hl2 + hl1 + 1)
+
+          w, b, roc = neuralnet(dataset1, dataset2, num_hidden_layers=(nfeatures, hl1 + 1, hl2 + 1),
+                                    wantplots=False)
+          if wantplots == True:
+            draw_network(b, w, ax=plt.gca(), colormap=plt.cm.Greens)
+
+          roc_scores_pertrial.append(ROC_data(roc)[0])
+          roc_values_pertrial.append(ROC_data(roc)[1])
+          HL_nodes_pertrial.append([hl1 + 1, hl2 + 1])
+  ### ROC ANALYSIS
+  ## sorting node patterns
+  excellent = []
+  good = []
+  fair = []
+  poor = []
+  failed = []
+  scores_and_nodes = [excellent, good, fair, poor, failed]
+
+  for t in range(ntrials):
+    for i in range(len(HL_nodes[t])):
+      # print(HL_nodes[t][i],roc_scores[t][i])
+      if roc_scores[t][i] == ['excellent']:
+        excellent.append(HL_nodes[t][i])
+      elif roc_scores[t][i] == ['good']:
+        good.append(HL_nodes[t][i])
+      elif roc_scores[t][i] == ['fair']:
+        fair.append(HL_nodes[t][i])
+      elif roc_scores[t][i] == ['poor']:
+        poor.append(HL_nodes[t][i])
+      elif roc_scores[t][i] == ['failed']:
+        failed.append(HL_nodes[t][i])
+
+  # print('Should be Equal:',len(excellent)+len(good)+len(fair)+len(poor)+len(failed),',', len(HL_nodes[0]*ntrials))
+
+  ## Checking for repeats of node patterns
+  # Unique lists
+  u_excellent = []
+  u_good = []
+  u_fair = []
+  u_poor = []
+  u_failed = []
+
+  # Repeat lists
+  r_excellent = []
+  r_good = []
+  r_fair = []
+  r_poor = []
+  r_failed = []
+
+  for i in range(len(scores_and_nodes)):  # cycle through each class
+    for j in scores_and_nodes[i]:  # cycle through each element in each class
+      if i == 0:
+        if j not in u_excellent:
+          u_excellent.append(j)
+        else:
+          r_excellent.append(j)
+      elif i == 1:
+        if j not in u_good:
+          u_good.append(j)
+        else:
+          r_good.append(j)
+      elif i == 2:
+        if j not in u_fair:
+          u_fair.append(j)
+        else:
+          r_fair.append(j)
+      elif i == 3:
+        if j not in u_poor:
+          u_poor.append(j)
+        else:
+          r_poor.append(j)
+
+      elif i == 4:
+        if j not in u_failed:
+          u_failed.append(j)
+        else:
+          r_failed.append(j)
+
+  # print('best of best:',u_excellent)
+  return u_excellent  ##best node pattern
+
 ################################################################################
 
 ################################################################################
